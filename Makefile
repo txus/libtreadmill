@@ -17,6 +17,9 @@ all: $(TARGET) $(SO_TARGET) tests
 dev: CFLAGS=-g -std=c11 -Wall -Isrc -Wall -Werror $(OPTFLAGS)
 dev: all
 
+leaks: clean dev
+	valgrind ./tests/void_tests && valgrind ./tests/gc_tests
+
 $(TARGET): CFLAGS += -fPIC
 $(TARGET): build $(OBJECTS)
 				ar rcs $@ $(OBJECTS)
