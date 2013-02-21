@@ -32,6 +32,8 @@ typedef struct tm_chunk_s {
 } TmChunk;
 
 TmHeap* TmHeap_new(int size, int growth_rate, TmReleaseFn release_fn);
+void TmHeap_grow(TmHeap *heap, int size);
+double TmHeap_size(TmHeap *heap);
 void TmHeap_destroy(TmHeap* heap);
 
 TmChunk TmChunk_new(int size);

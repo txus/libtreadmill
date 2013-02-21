@@ -43,6 +43,41 @@ TmHeap_new(int size, int growth_rate, TmReleaseFn release_fn)
 }
 
 void
+TmHeap_grow(TmHeap *heap, int size)
+{
+  TmChunk chunk = TmChunk_new(size);
+  TmCell *head = chunk.head;
+  TmCell *tail = chunk.tail;
+
+  // Save a reference to the chunk to deallocate it later
+  DArray_push(heap->chunks, head);
+
+  // Put the new chunk before the current free.
+  TmCell *oldfree  = FREE;
+  TmCell *previous = oldfree->prev;
+
+  // Attach tail
+  oldfree->prev = tail;
+  tail->next    = oldfree;
+
+  // Attach head
+  previous->next = head;
+  head->prev     = previous;
+
+  FREE = head;
+}
+
+double
+TmHeap_size(TmHeap *heap)
+{
+  double count = 1;
+  TmCell *ptr = TOP;
+  while((ptr = ptr->next) && ptr != TOP) count++;
+
+  return count;
+}
+
+void
 TmHeap_destroy(TmHeap* heap)
 {
   TmCell *ptr = NULL;
