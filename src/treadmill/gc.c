@@ -67,14 +67,54 @@ TmHeap_grow(TmHeap *heap, int size)
   FREE = head;
 }
 
+static inline int
+TmHeap_distance_between(TmCell *a, TmCell *b)
+{
+  int count = 1;
+  TmCell *ptr = a;
+  while((ptr = ptr->next) && ptr != b) count++;
+
+  return count;
+}
+
+
 double
 TmHeap_size(TmHeap *heap)
 {
-  double count = 1;
-  TmCell *ptr = TOP;
-  while((ptr = ptr->next) && ptr != TOP) count++;
+  return TmHeap_distance_between(TOP, TOP);
+}
 
-  return count;
+double
+TmHeap_white_size(TmHeap *heap)
+{
+  if(FREE == BOTTOM &&
+     FREE == TOP &&
+     FREE == SCAN) {
+    return TmHeap_size(heap);
+  }
+
+  return TmHeap_distance_between(FREE, BOTTOM);
+}
+
+double
+TmHeap_ecru_size(TmHeap *heap)
+{
+  if(BOTTOM == TOP) return 0;
+  return TmHeap_distance_between(BOTTOM, TOP);
+}
+
+double
+TmHeap_grey_size(TmHeap *heap)
+{
+  if(TOP == SCAN) return 0;
+  return TmHeap_distance_between(TOP, SCAN);
+}
+
+double
+TmHeap_black_size(TmHeap *heap)
+{
+  if(SCAN == FREE) return 0;
+  return TmHeap_distance_between(SCAN, FREE);
 }
 
 void
