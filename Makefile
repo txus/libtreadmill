@@ -1,4 +1,5 @@
-CFLAGS=-g -O3 -Wall -Werror -Isrc -rdynamic -DNDEBUG $(OPTFLAGS)
+CC=clang
+CFLAGS=-g -O3 -std=c11 -Wall -Werror -Isrc -DNDEBUG $(OPTFLAGS)
 LIBS=$(OPTLIBS)
 PREFIX?=/usr/local
 
