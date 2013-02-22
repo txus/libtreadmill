@@ -11,8 +11,12 @@
   (N) = (A);             \
   while((N) != (B))
 
+/*
+ * -(bottom)- ECRU -(top)- GREY -(scan)- BLACK -(free)- WHITE ...
+ */
+
 TmHeap*
-TmHeap_new(int size, int growth_rate, TmReleaseFn release_fn)
+TmHeap_new(int size, int growth_rate, size_t object_size, TmReleaseFn release_fn)
 {
   TmHeap *heap = calloc(1, sizeof(TmHeap));
 
@@ -27,6 +31,7 @@ TmHeap_new(int size, int growth_rate, TmReleaseFn release_fn)
 
   heap->growth_rate = growth_rate;
   heap->release     = release_fn;
+  heap->object_size = object_size;
   heap->allocs      = 0;
   heap->scan_every  = 5;
 
@@ -40,6 +45,19 @@ TmHeap_new(int size, int growth_rate, TmReleaseFn release_fn)
   head->prev = tail;
 
   return heap;
+}
+
+static inline void print(TmHeap *heap)
+{
+  TmCell *ptr = TOP;
+  do {
+    printf("* %p", ptr);
+    if(ptr == TOP) printf(" (TOP)");
+    if(ptr == BOTTOM) printf(" (BOTTOM)");
+    if(ptr == FREE) printf(" (FREE)");
+    if(ptr == SCAN) printf(" (SCAN)");
+    printf("\n");
+  } while((ptr = ptr->next) && ptr != TOP);
 }
 
 void
@@ -64,6 +82,9 @@ TmHeap_grow(TmHeap *heap, int size)
   previous->next = head;
   head->prev     = previous;
 
+  if(BOTTOM == FREE) BOTTOM = head;
+  if(TOP    == FREE) TOP = head;
+  if(SCAN   == FREE) SCAN = head;
   FREE = head;
 }
 
@@ -123,8 +144,9 @@ TmHeap_destroy(TmHeap* heap)
   TmCell *ptr = NULL;
 
   ITERATE(BOTTOM, FREE, ptr) {
-    RELEASE(ptr);
-    ptr = ptr->next;
+    TmCell *next = ptr->next;
+    RELEASE(ptr->value);
+    ptr = next;
   }
 
   for(int i=0; i < DArray_count(heap->chunks); i++) {
@@ -162,4 +184,22 @@ TmChunk_new(int size)
 
   TmChunk chunk = { .head = memory, .tail = tail };
   return chunk;
+}
+
+TmHeader*
+Tm_allocate(TmHeap *heap)
+{
+  TmHeader *header = calloc(1, heap->object_size);
+  check(header, "Out of memory.");
+
+  TmCell *free = FREE;
+  header->cell = free;
+  header->cell->value = header;
+
+  FREE = FREE->next;
+
+  return header;
+error:
+  exit(EXIT_FAILURE);
+  return NULL;
 }

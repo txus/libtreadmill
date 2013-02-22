@@ -22,17 +22,24 @@ typedef struct tm_heap_s {
   int growth_rate;
   int allocs;
   int scan_every;
+  size_t object_size;
   TmReleaseFn release;
   DArray *chunks;
 } TmHeap;
+
+typedef struct tm_header_s {
+  TmCell *cell;
+} TmHeader;
 
 typedef struct tm_chunk_s {
   TmCell *head;
   TmCell *tail;
 } TmChunk;
 
-TmHeap* TmHeap_new(int size, int growth_rate, TmReleaseFn release_fn);
+TmHeap* TmHeap_new(int size, int growth_rate, size_t object_size, TmReleaseFn release_fn);
 void TmHeap_grow(TmHeap *heap, int size);
+
+TmHeader* Tm_allocate(TmHeap *heap);
 
 double TmHeap_size(TmHeap *heap);
 double TmHeap_white_size(TmHeap *heap);
