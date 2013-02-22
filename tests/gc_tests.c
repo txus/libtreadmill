@@ -76,6 +76,7 @@ char *test_TmHeap_allocate()
   TmCell *cell = obj->gc.cell;
 
   mu_assert(cell == FREE->prev, "Cell should be right before the free pointer");
+  mu_assert(heap->allocs == 1, "Allocation didn't update the allocs count.");
 
   assert_heap_size(10);
 

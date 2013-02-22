@@ -198,6 +198,8 @@ Tm_allocate(TmHeap *heap)
 
   FREE = FREE->next;
 
+  heap->allocs++;
+
   return header;
 error:
   exit(EXIT_FAILURE);
