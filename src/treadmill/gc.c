@@ -16,10 +16,11 @@
  */
 
 TmHeap*
-TmHeap_new(int size, int growth_rate, size_t object_size, TmReleaseFn release_fn)
+TmHeap_new(TmStateHeader* state, int size, int growth_rate, size_t object_size, TmReleaseFn release_fn)
 {
   TmHeap *heap = calloc(1, sizeof(TmHeap));
 
+  heap->state  = state;
   heap->chunks = DArray_create(sizeof(TmCell*), 100);
 
   TmChunk chunk = TmChunk_new(size);
@@ -47,9 +48,18 @@ TmHeap_new(int size, int growth_rate, size_t object_size, TmReleaseFn release_fn
   return heap;
 }
 
-static inline void print(TmHeap *heap)
+void
+TmHeap_print_all(TmHeap *heap)
 {
   TmCell *ptr = TOP;
+  printf(
+    "[HEAP] (%0.f) (ECRU %0.f | GREY %0.f | BLACK %0.f | WHITE %0.f)\n",
+    TmHeap_size(heap),
+    TmHeap_ecru_size(heap),
+    TmHeap_grey_size(heap),
+    TmHeap_black_size(heap),
+    TmHeap_white_size(heap)
+    );
   do {
     printf("* %p", ptr);
     if(ptr == TOP) printf(" (TOP)");
@@ -58,6 +68,7 @@ static inline void print(TmHeap *heap)
     if(ptr == SCAN) printf(" (SCAN)");
     printf("\n");
   } while((ptr = ptr->next) && ptr != TOP);
+  printf("[END HEAP]\n");
 }
 
 void
@@ -144,9 +155,8 @@ TmHeap_destroy(TmHeap* heap)
   TmCell *ptr = NULL;
 
   ITERATE(BOTTOM, FREE, ptr) {
-    TmCell *next = ptr->next;
     RELEASE(ptr->value);
-    ptr = next;
+    ptr = ptr->next;
   }
 
   for(int i=0; i < DArray_count(heap->chunks); i++) {
@@ -186,10 +196,112 @@ TmChunk_new(int size)
   return chunk;
 }
 
-TmHeader*
+static inline void
+scan_cell(TmHeap *heap, TmCell *cell)
+{
+  debug("SCANNED %p\n", cell);
+}
+
+void
+Tm_scan(TmHeap *heap)
+{
+  // If scan == top, the collection has finished
+  if(SCAN == TOP) {
+    debug("[GC]: No more grey objects to scan.");
+    return;
+  }
+
+  // Move the scan pointer backwards, converting the scanned grey cell into a
+  // black cell.
+  SCAN = SCAN->prev;
+  scan_cell(heap, SCAN);
+}
+
+static inline void
+unsnap(TmHeap *heap, TmCell* me) {
+  TmCell *my_prev = me->prev;
+  TmCell *my_next = me->next;
+  me->next = NULL;
+  me->prev = NULL;
+
+  if(BOTTOM == me) BOTTOM = my_next;
+  if(TOP    == me) TOP    = my_next;
+  if(SCAN   == me) SCAN   = my_next;
+  if(FREE   == me) FREE   = my_next;
+
+  my_prev->next = my_next;
+  my_next->prev = my_prev;
+}
+
+static inline void
+insert_in(TmHeap *heap, TmCell* me, TmCell* him) {
+  if(me == him) return; // we do nothing
+
+  unsnap(heap, me);
+
+  TmCell *his_prev = him->prev;
+
+  his_prev->next = me;
+  him->prev      = me;
+
+  me->prev  = his_prev;
+  me->next  = him;
+
+  if(him == TOP)    TOP = me;
+  if(him == BOTTOM) BOTTOM = me;
+  if(him == SCAN)   SCAN = me;
+  if(him == FREE)   FREE = me;
+}
+
+static inline void
+make_ecru(TmHeap *heap, TmCell *self)
+{
+  if(self == BOTTOM) {
+    if (self == TOP)  TOP  = self->next;
+    if (self == SCAN) SCAN = self->next;
+    if (self == FREE) FREE = self->next;
+  } else {
+    insert_in(heap, self, BOTTOM);
+  }
+  self->ecru = 1;
+}
+
+void
+Tm_flip(TmHeap *heap)
+{
+  // Scan all the grey cells before flipping.
+  while(SCAN != TOP) Tm_scan(heap);
+
+  TmCell *ptr = NULL;
+
+  // Make all the ecru into white and release them
+  ITERATE(BOTTOM, TOP, ptr) {
+    ptr->ecru = 0;
+    RELEASE(ptr->value);
+    ptr = ptr->next;
+  }
+  BOTTOM = TOP;
+
+  TmHeap_grow(heap, heap->growth_rate);
+
+  // Make all black into ecru.
+  ITERATE(SCAN, FREE, ptr) {
+    TmCell *next = ptr->next;
+    make_ecru(heap, ptr);
+    ptr = next;
+  }
+}
+
+TmObjectHeader*
 Tm_allocate(TmHeap *heap)
 {
-  TmHeader *header = calloc(1, heap->object_size);
+  /*
+   * If there are no slots in the white list,
+   * force a collection.
+   */
+  if(FREE->next == BOTTOM) Tm_flip(heap);
+
+  TmObjectHeader *header = calloc(1, heap->object_size);
   check(header, "Out of memory.");
 
   TmCell *free = FREE;
