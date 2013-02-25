@@ -1,10 +1,10 @@
-#ifndef _Tm_DArray_h
-#define _Tm_DArray_h
+#ifndef _Tm_DArray_h_
+#define _Tm_DArray_h_
 #include <stdlib.h>
 #include <assert.h>
 #include <treadmill/_dbg.h>
 
-typedef struct Tm_DArray {
+typedef struct tm_darray_s {
   int end;
   int max;
   size_t element_size;
