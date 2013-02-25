@@ -1,6 +1,6 @@
-# treadmill
+# libtreadmill
 
-An implementation of Baker's Treadmill GC algorithm.
+An implementation of Baker's Treadmill Garbage Collector.
 
 ## Contributing
 
