@@ -21,6 +21,9 @@ dev: all
 leaks: clean dev
 	valgrind ./tests/void_tests && valgrind ./tests/gc_tests
 
+leaks-full: clean dev
+	valgrind ./tests/void_tests && valgrind --leak-check=full ./tests/gc_tests
+
 $(TARGET): CFLAGS += -fPIC
 $(TARGET): build $(OBJECTS)
 				ar rcs $@ $(OBJECTS)

@@ -17,13 +17,17 @@ typedef struct tm_object_header_s {
 } TmObjectHeader;
 
 struct tm_state_header_s;
-typedef void (*TmRootsetFn)(DArray *rootset, struct tm_state_header_s *state);
+typedef DArray* (*TmRootsetFn)(struct tm_state_header_s *state);
 
 typedef struct tm_state_header_s {
   TmRootsetFn rootset;
 } TmStateHeader;
 
+struct tm_heap_s;
 typedef void (*TmReleaseFn)(void *value);
+typedef void (*TmCallbackFn)(struct tm_heap_s *state, TmObjectHeader *object);
+void make_grey_if_ecru(struct tm_heap_s *state, TmObjectHeader *o);
+typedef void (*TmScanPointersFn)(struct tm_heap_s *state, TmObjectHeader *object, TmCallbackFn callback);
 
 typedef struct tm_heap_s {
   TmCell *bottom;
@@ -33,8 +37,10 @@ typedef struct tm_heap_s {
   int growth_rate;
   int allocs;
   int scan_every;
+  int warm;
   size_t object_size;
   TmReleaseFn release;
+  TmScanPointersFn scan_pointers;
   TmStateHeader *state;
   DArray *chunks;
 } TmHeap;
@@ -44,7 +50,7 @@ typedef struct tm_chunk_s {
   TmCell *tail;
 } TmChunk;
 
-TmHeap* TmHeap_new(TmStateHeader *state, int size, int growth_rate, size_t object_size, TmReleaseFn release_fn);
+TmHeap* TmHeap_new(TmStateHeader *state, int size, int growth_rate, size_t object_size, TmReleaseFn release_fn, TmScanPointersFn scan_pointers_fn);
 void TmHeap_grow(TmHeap *heap, int size);
 
 TmObjectHeader* Tm_allocate(TmHeap *heap);
