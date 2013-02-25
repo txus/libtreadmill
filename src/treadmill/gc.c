@@ -122,9 +122,8 @@ TmHeap_new(
 }
 
 void
-TmHeap_print_all(TmHeap *heap)
+TmHeap_print(TmHeap *heap)
 {
-  TmCell *ptr = TOP;
   printf(
     "[HEAP] (%i) (ECRU %i | GREY %i | BLACK %i | WHITE %i)\n",
     (int)TmHeap_size(heap),
@@ -133,6 +132,14 @@ TmHeap_print_all(TmHeap *heap)
     (int)TmHeap_black_size(heap),
     (int)TmHeap_white_size(heap)
     );
+}
+
+void
+TmHeap_print_all(TmHeap *heap)
+{
+  TmHeap_print(heap);
+
+  TmCell *ptr = TOP;
   do {
     printf("* %p", ptr);
     if(ptr == TOP) printf(" (TOP)");
@@ -233,6 +240,8 @@ null_rootset(TmStateHeader *state)
 void
 TmHeap_destroy(TmHeap* heap)
 {
+  debug("[GC] Destroying the heap");
+
   // Ignore the rootset and flip twice to clean up
   heap->state->rootset = null_rootset;
   Tm_flip(heap);
