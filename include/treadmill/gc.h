@@ -27,7 +27,6 @@ typedef struct tm_state_header_s {
 struct tm_heap_s;
 typedef void (*TmReleaseFn)(void *value);
 typedef void (*TmCallbackFn)(struct tm_heap_s *state, TmObjectHeader *object);
-void make_grey_if_ecru(struct tm_heap_s *state, TmObjectHeader *o);
 typedef void (*TmScanPointersFn)(struct tm_heap_s *state, TmObjectHeader *object, TmCallbackFn callback);
 
 typedef struct tm_heap_s {

@@ -1,5 +1,5 @@
 CC=clang
-CFLAGS=-g -O3 -std=c99 -Wall -Werror -Isrc -Iinclude -DNDEBUG $(OPTFLAGS)
+CFLAGS=-g -O3 -std=c99 -Wall -Werror -Iinclude -DNDEBUG $(OPTFLAGS)
 LIBS=$(OPTLIBS)
 PREFIX?=/usr/local
 
@@ -15,7 +15,7 @@ SO_TARGET=$(patsubst %.a,%.so,$(TARGET))
 # The Target Build
 all: $(TARGET) $(SO_TARGET) tests
 
-dev: CFLAGS=-g -std=c99 -Wall -Isrc -Wall -Werror $(OPTFLAGS)
+dev: CFLAGS=-g -std=c99 -Wall -Iinclude -Werror $(OPTFLAGS)
 dev: all
 
 leaks: clean dev
