@@ -2,6 +2,7 @@
 #define _treadmill_gc_h
 
 #include <treadmill/_darray.h>
+#include <treadmill/_dbg.h>
 
 struct tm_cell_s;
 
