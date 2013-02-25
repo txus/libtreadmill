@@ -282,7 +282,7 @@ TmChunk_new(int size)
   return chunk;
 }
 
-void
+static inline void
 make_grey_if_ecru(TmHeap *heap, TmObjectHeader *o)
 {
   TmCell *cell = o->cell;
