@@ -1,7 +1,7 @@
 #ifndef _treadmill_gc_h
 #define _treadmill_gc_h
 
-#include <treadmill/_darray.h>
+#include <treadmill/darray.h>
 #include <treadmill/_dbg.h>
 
 struct tm_cell_s;
@@ -18,7 +18,7 @@ typedef struct tm_object_header_s {
 } TmObjectHeader;
 
 struct tm_state_header_s;
-typedef DArray* (*TmRootsetFn)(struct tm_state_header_s *state);
+typedef Tm_DArray* (*TmRootsetFn)(struct tm_state_header_s *state);
 
 typedef struct tm_state_header_s {
   TmRootsetFn rootset;
@@ -42,7 +42,7 @@ typedef struct tm_heap_s {
   TmReleaseFn release;
   TmScanPointersFn scan_pointers;
   TmStateHeader *state;
-  DArray *chunks;
+  Tm_DArray *chunks;
 } TmHeap;
 
 typedef struct tm_chunk_s {

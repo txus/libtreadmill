@@ -85,14 +85,14 @@ TmHeap_new(TmStateHeader* state, int size, int growth_rate, size_t object_size, 
   TmHeap *heap = calloc(1, sizeof(TmHeap));
 
   heap->state  = state;
-  heap->chunks = DArray_create(sizeof(TmCell*), 100);
+  heap->chunks = Tm_DArray_create(sizeof(TmCell*), 100);
 
   TmChunk chunk = TmChunk_new(size + 1);
   TmCell *head = chunk.head;
   TmCell *tail = chunk.tail;
 
   // Save a reference to the chunk to deallocate it later
-  DArray_push(heap->chunks, head);
+  Tm_DArray_push(heap->chunks, head);
 
   heap->growth_rate   = growth_rate;
   heap->release       = release_fn;
@@ -147,7 +147,7 @@ TmHeap_grow(TmHeap *heap, int size)
   TmCell *tail = chunk.tail;
 
   // Save a reference to the chunk to deallocate it later
-  DArray_push(heap->chunks, head);
+  Tm_DArray_push(heap->chunks, head);
 
   // Put the new chunk before the current free.
   TmCell *oldfree  = FREE;
@@ -217,10 +217,10 @@ TmHeap_black_size(TmHeap *heap)
   return TmHeap_distance_between(SCAN, FREE);
 }
 
-static inline DArray*
+static inline Tm_DArray*
 null_rootset(TmStateHeader *state)
 {
-  return DArray_create(sizeof(TmObjectHeader*), 1);
+  return Tm_DArray_create(sizeof(TmObjectHeader*), 1);
 }
 
 void
@@ -238,12 +238,12 @@ TmHeap_destroy(TmHeap* heap)
     ptr = ptr->next;
   }
 
-  for(int i=0; i < DArray_count(heap->chunks); i++) {
-    TmCell *chunk = (TmCell*)DArray_at(heap->chunks, i);
+  for(int i=0; i < Tm_DArray_count(heap->chunks); i++) {
+    TmCell *chunk = (TmCell*)Tm_DArray_at(heap->chunks, i);
     free(chunk);
   }
 
-  DArray_destroy(heap->chunks);
+  Tm_DArray_destroy(heap->chunks);
 
   free(heap);
 }
@@ -326,17 +326,17 @@ Tm_flip(TmHeap *heap)
   }
 
   // Add all the rootset into the grey set.
-  DArray *rootset = heap->state->rootset(heap->state);
+  Tm_DArray *rootset = heap->state->rootset(heap->state);
 
-  int count = DArray_count(rootset);
+  int count = Tm_DArray_count(rootset);
   debug("[GC] Adding rootset (%i)", count);
   for(int i=0; i < count; i++) {
-    TmObjectHeader *o = (TmObjectHeader*)(DArray_at(rootset, i));
+    TmObjectHeader *o = (TmObjectHeader*)(Tm_DArray_at(rootset, i));
     TmCell *cell = o->cell;
     make_grey(heap, cell);
   }
 
-  DArray_destroy(rootset);
+  Tm_DArray_destroy(rootset);
 }
 
 TmObjectHeader*

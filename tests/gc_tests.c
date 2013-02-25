@@ -14,22 +14,22 @@
 
 typedef struct state_s {
   TmStateHeader gc;
-  DArray *registers;
+  Tm_DArray *registers;
 } State;
 
 typedef struct object_s {
   TmObjectHeader gc;
   int health;
-  DArray *children;
+  Tm_DArray *children;
 } Object;
 
-DArray*
+Tm_DArray*
 test_rootset(TmStateHeader *state_h)
 {
-  DArray *rootset = DArray_create(sizeof(TmObjectHeader*), 10);
+  Tm_DArray *rootset = Tm_DArray_create(sizeof(TmObjectHeader*), 10);
   State *state = (State*)state_h;
-  for(int i=0; i<DArray_count(state->registers);i++) {
-    DArray_push(rootset, DArray_at(state->registers, i));
+  for(int i=0; i<Tm_DArray_count(state->registers);i++) {
+    Tm_DArray_push(rootset, Tm_DArray_at(state->registers, i));
   }
 
   return rootset;
@@ -39,8 +39,8 @@ void
 test_scan_pointers(TmHeap *heap, TmObjectHeader *object, TmCallbackFn callback)
 {
   Object *self = (Object*)object;
-  for(int i=0; i < DArray_count(self->children); i++) {
-    TmObjectHeader *o = (TmObjectHeader*)DArray_at(self->children, i);
+  for(int i=0; i < Tm_DArray_count(self->children); i++) {
+    TmObjectHeader *o = (TmObjectHeader*)Tm_DArray_at(self->children, i);
     callback(heap, o);
   }
 }
@@ -50,14 +50,14 @@ State_new()
 {
   State *state = calloc(1, sizeof(State));
   state->gc.rootset = test_rootset;
-  state->registers = DArray_create(sizeof(Object*), 10);
+  state->registers = Tm_DArray_create(sizeof(Object*), 10);
   return state;
 }
 
 void
 State_destroy(State *state)
 {
-  DArray_destroy(state->registers);
+  Tm_DArray_destroy(state->registers);
   free(state);
 }
 
@@ -66,32 +66,32 @@ Object_new(TmHeap *heap)
 {
   Object *obj = (Object*)Tm_allocate(heap);
   obj->health = 100;
-  obj->children = DArray_create(sizeof(Object*), 10);
+  obj->children = Tm_DArray_create(sizeof(Object*), 10);
   return obj;
 }
 
 void
 Object_print(Object *self)
 {
-  printf("#<Object %p @cell=%p, @health=%i, @children=%i>\n", self, self->gc.cell, self->health, DArray_count(self->children));
+  printf("#<Object %p @cell=%p, @health=%i, @children=%i>\n", self, self->gc.cell, self->health, Tm_DArray_count(self->children));
 }
 
 void
 Object_relate(Object* parent, Object* child)
 {
-  DArray_push(parent->children, child);
+  Tm_DArray_push(parent->children, child);
 }
 
 void
 Object_make_root(Object *self, State *state)
 {
-  DArray_push(state->registers, self);
+  Tm_DArray_push(state->registers, self);
 }
 
 void
 Object_destroy(Object *self)
 {
-  DArray_destroy(self->children);
+  Tm_DArray_destroy(self->children);
   free(self);
 }
 
