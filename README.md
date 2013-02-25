@@ -17,7 +17,6 @@ interface clear.
     $ cd <your_project>
     $ mkdir -p deps
     $ git submodule add git://github.com/txus/libtreadmill deps/libtreadmill
-    $ 
 
 In your Makefile, add this to your `CFLAGS`:
 
