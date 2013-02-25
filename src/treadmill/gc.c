@@ -80,7 +80,14 @@ make_grey(TmHeap *heap, TmCell *self)
 
 
 TmHeap*
-TmHeap_new(TmStateHeader* state, int size, int growth_rate, size_t object_size, TmReleaseFn release_fn, TmScanPointersFn scan_pointers_fn)
+TmHeap_new(
+  TmStateHeader* state,
+  int size,
+  int growth_rate,
+  int scan_every,
+  size_t object_size,
+  TmReleaseFn release_fn,
+  TmScanPointersFn scan_pointers_fn)
 {
   TmHeap *heap = calloc(1, sizeof(TmHeap));
 
@@ -100,7 +107,7 @@ TmHeap_new(TmStateHeader* state, int size, int growth_rate, size_t object_size, 
   heap->object_size   = object_size;
   heap->warm          = 0;
   heap->allocs        = 0;
-  heap->scan_every    = 5;
+  heap->scan_every    = scan_every;
 
   FREE   = head;
   BOTTOM = head;

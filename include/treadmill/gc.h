@@ -50,7 +50,7 @@ typedef struct tm_chunk_s {
   TmCell *tail;
 } TmChunk;
 
-TmHeap* TmHeap_new(TmStateHeader *state, int size, int growth_rate, size_t object_size, TmReleaseFn release_fn, TmScanPointersFn scan_pointers_fn);
+TmHeap* TmHeap_new(TmStateHeader *state, int size, int growth_rate, int scan_every, size_t object_size, TmReleaseFn release_fn, TmScanPointersFn scan_pointers_fn);
 void TmHeap_grow(TmHeap *heap, int size);
 
 TmObjectHeader* Tm_allocate(TmHeap *heap);

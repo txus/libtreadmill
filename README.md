@@ -152,6 +152,7 @@ TmHeap *heap = TmHeap_new(
   (TmStateHeader*)state, // your initialized state object
   1000,                  // initial size of the heap
   1500,                  // growth rate in number of cells
+  200,                   // scan every 200 allocations
   sizeof(Object),        // the size of your Objects
   release_my_object,     // a pointer to your release function
   scan_my_pointers       // a pointer to your function to scan pointers

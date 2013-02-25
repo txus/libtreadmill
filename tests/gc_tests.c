@@ -108,6 +108,7 @@ new_heap(State *state, int size, int growth_rate)
     (TmStateHeader*)state,
     size,
     growth_rate,
+    5,
     sizeof(Object),
     test_release,
     test_scan_pointers
