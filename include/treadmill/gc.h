@@ -1,7 +1,7 @@
 #ifndef _treadmill_gc_h
 #define _treadmill_gc_h
 
-#include <treadmill/darray.h>
+#include <treadmill/_darray.h>
 
 struct tm_cell_s;
 
